@@ -139,7 +139,7 @@ export OPENAI_MODEL="gpt-4o-mini"
 
 ```bash
 cd paypal-frontdesk
-python3 -m pytest        # 68 tests, ~25s, fully offline
+python3 -m pytest        # 73 tests, ~25s, fully offline
 ```
 
 The suite covers: dialogue-brain transitions, slot extraction (rules path
