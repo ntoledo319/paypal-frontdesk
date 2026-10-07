@@ -1,0 +1,33 @@
+{
+  "name": "Toledo Shine Mobile Detailing",
+  "agent_name": "Riley",
+  "currency": "USD",
+  "deposit_percent": 25,
+  "services": [
+    {
+      "name": "Full Interior Detail",
+      "price_from": 120,
+      "duration_min": 120,
+      "aliases": ["interior", "interior detail", "inside", "full interior"]
+    },
+    {
+      "name": "Exterior Wash & Wax",
+      "price_from": 80,
+      "duration_min": 90,
+      "aliases": ["exterior", "wash", "wax", "wash and wax", "outside"]
+    },
+    {
+      "name": "Full Detail Package",
+      "price_from": 180,
+      "duration_min": 180,
+      "aliases": ["full detail", "full package", "everything", "the works", "complete"]
+    },
+    {
+      "name": "Engine Bay Cleaning",
+      "price_from": 60,
+      "duration_min": 45,
+      "aliases": ["engine", "engine bay"],
+      "deposit_flat": 15
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "paypal-frontdesk"
+version = "0.1.0"
+description = "AI front-desk agent that books appointments and collects deposits via PayPal — agentic commerce (PayPal AI Hackathon)"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [{ name = "Nicholas Toledo" }]
+keywords = ["paypal", "agentic-commerce", "ai-agent", "hackathon"]
+# Runtime code is Python standard library only — no dependencies, by design.
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.setuptools]
+packages = ["paypal_frontdesk"]
