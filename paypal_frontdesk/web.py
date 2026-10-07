@@ -81,11 +81,28 @@ _PAGE = """<!DOCTYPE html>
     <div class="state" id="state">—</div>
     <h2>Payment trail</h2>
     <div id="trail"></div>
-    <h2>Bookings</h2>
-    <div id="bookings"></div>
+    <h2>Bookings <small style="font-weight:400;color:#8b949e">(AG Grid)</small></h2>
+    <div id="bookings" class="ag-theme-alpine-dark" style="height:220px"></div>
   </div>
+<script src="/static/ag-grid-community.min.js"></script>
 <script>
 const log = document.getElementById('log');
+const gridApi = window.agGrid ? agGrid.createGrid(document.getElementById('bookings'), {
+  columnDefs: [
+    {field: 'id', headerName: 'Booking', width: 105},
+    {field: 'status', headerName: 'Status', width: 110},
+    {field: 'service', headerName: 'Service', flex: 1},
+    {field: 'date', headerName: 'Date', width: 110},
+    {field: 'time', headerName: 'Time', width: 80},
+    {field: 'deposit', headerName: 'Deposit', width: 95, type: 'rightAligned'},
+    {field: 'order_id', headerName: 'Order', width: 140},
+    {field: 'capture_id', headerName: 'Capture', width: 140},
+    {field: 'refund_id', headerName: 'Refund', width: 140},
+    {field: 'invoice_id', headerName: 'Invoice', width: 120},
+  ],
+  defaultColDef: {sortable: true, filter: true, resizable: true},
+  rowData: [],
+}) : null;
 function linkify(t) {
   return t.replace(/(https?:\\/\\/[^\\s]+)/g, '<a href="$1" target="_blank">$1</a>');
 }
@@ -100,14 +117,18 @@ function render(s) {
   document.getElementById('mode').textContent = s.mode;
   document.getElementById('trail').innerHTML = s.trail.map(e =>
     `<div class="event ${e.kind}"><b>${e.kind}</b> — ${e.detail}</div>`).join('') || '<i>none yet</i>';
-  document.getElementById('bookings').innerHTML = s.bookings.map(b =>
-    `<div class="booking"><b>${b.id}</b> [${b.status}] ${b.service}<br>` +
-    `${b.date} ${b.time} — deposit ${b.deposit} ${b.currency}<br>` +
-    (b.order_id ? `order ${b.order_id}<br>` : '') +
-    (b.capture_id ? `capture ${b.capture_id}<br>` : '') +
-    (b.refund_id ? `refund ${b.refund_id}<br>` : '') +
-    (b.invoice_id ? `invoice ${b.invoice_id}` : '') +
-    `</div>`).join('') || '<i>none yet</i>';
+  if (gridApi) {
+    gridApi.setGridOption('rowData', s.bookings);
+  } else {
+    document.getElementById('bookings').innerHTML = s.bookings.map(b =>
+      `<div class="booking"><b>${b.id}</b> [${b.status}] ${b.service}<br>` +
+      `${b.date} ${b.time} — deposit ${b.deposit} ${b.currency}<br>` +
+      (b.order_id ? `order ${b.order_id}<br>` : '') +
+      (b.capture_id ? `capture ${b.capture_id}<br>` : '') +
+      (b.refund_id ? `refund ${b.refund_id}<br>` : '') +
+      (b.invoice_id ? `invoice ${b.invoice_id}` : '') +
+      `</div>`).join('') || '<i>none yet</i>';
+  }
 }
 fetch('/api/state').then(r => r.json()).then(s => { render(s); add('agent', s.greeting); });
 document.getElementById('f').addEventListener('submit', async ev => {
@@ -179,6 +200,13 @@ def make_handler(agent: FrontDeskAgent, mock: MockPayPalServer | None):
                 self.wfile.write(body)
             elif self.path == "/api/state":
                 self._json(_state_payload(agent, mock))
+            elif self.path == "/static/ag-grid-community.min.js":
+                body = (Path(__file__).parent / "static" / "ag-grid-community.min.js").read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", "text/javascript; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
             else:
                 self._json({"error": "not found"}, 404)
 

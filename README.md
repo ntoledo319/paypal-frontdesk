@@ -81,6 +81,11 @@ python3 -m paypal_frontdesk.web --mock --port 8080
 # → open http://127.0.0.1:8080
 ```
 
+The browser widget renders the bookings table with **AG Grid Community**
+(sortable/filterable booking, payment, and invoice columns), vendored at
+`paypal_frontdesk/static/ag-grid-community.min.js` (MIT — see
+`THIRD-PARTY-LICENSES.md`) and served locally so the demo works fully offline.
+
 The scripted demo prints the full money trail, e.g.:
 
 ```
