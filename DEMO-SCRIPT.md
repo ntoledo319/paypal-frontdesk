@@ -42,13 +42,13 @@ Run: `python3 -m paypal_frontdesk.cli --demo`
 Run: `python3 -m pytest -q`
 
 > "Everything you just saw runs on the actual PayPal v2 REST surface —
-> checkout orders, captures, refunds, invoicing. The bundled mock server
-> implements the same endpoints, so the demo runs offline, but point three
-> environment variables at api-m.sandbox.paypal.com and the identical code
-> runs against the real sandbox. 68 tests, all passing: dialogue
-> transitions, slot extraction, the full book-and-pay flow, refunds,
-> invoices, and the failure paths — capture failures, expired orders,
-> unapproved captures."
+> checkout orders, captures, refunds, invoicing. It is tested against the
+> bundled mock server, which implements the same endpoints, so the demo runs
+> offline. The sandbox runner is included (scripts/sandbox_cycle.py); the
+> code has not yet been verified live on the PayPal sandbox. 73 tests, all
+> passing: dialogue transitions, slot extraction, the full book-and-pay
+> flow, refunds, invoices, and the failure paths — capture failures,
+> expired orders, unapproved captures."
 
 ## 1:40–2:00 — Close
 
