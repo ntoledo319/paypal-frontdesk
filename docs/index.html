@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>paypal-frontdesk — live demo replay</title>
+<meta name="description" content="Static replay of the paypal-frontdesk browser chat simulator: an AI front-desk agent that books an appointment and collects the PayPal deposit in the same conversation.">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: ui-sans-serif, system-ui, sans-serif;
+         background: #0b1020; color: #e6e9f2; }
+  a { color: #6db3ff; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid #6db3ff; outline-offset: 2px; border-radius: 4px;
+  }
+
+  /* ---- site header ---- */
+  #sitebar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+             padding: 14px 20px; border-bottom: 1px solid #232a45;
+             background: #0e1428; }
+  #sitebar .brand { font-weight: 650; font-size: 15px; margin-right: auto; }
+  #sitebar .brand span { color: #8b93b0; font-weight: 400; }
+  #sitebar nav { display: flex; gap: 8px; flex-wrap: wrap; }
+  #sitebar nav a { font-size: 13px; text-decoration: none; padding: 6px 12px;
+                   border: 1px solid #2c3554; border-radius: 8px; color: #e6e9f2; }
+  #sitebar nav a:hover { background: #1c2440; }
+
+  .note { margin: 14px 20px 0; padding: 10px 14px; font-size: 13px;
+          background: #131a30; border: 1px solid #2c3554; border-left: 3px solid #f0a832;
+          border-radius: 6px; color: #c9d1e8; }
+  .note code { color: #6db3ff; }
+
+  /* ---- simulator layout (mirrors paypal_frontdesk/web.py) ---- */
+  #app { display: flex; height: calc(100vh - 116px); min-height: 480px; margin-top: 14px;
+         border-top: 1px solid #232a45; }
+  #chat { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  #chat header { padding: 14px 20px; border-bottom: 1px solid #232a45;
+                 display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  #chat header h1 { margin: 0; font-size: 16px; }
+  #chat header small { color: #8b93b0; }
+  #replay { padding: 8px 16px; border: 0; border-radius: 8px; background: #2f6df6;
+            color: white; font-size: 13px; cursor: pointer; margin-left: auto; }
+  #replay:hover { background: #4a82f8; }
+  #replay[disabled] { opacity: .55; cursor: default; }
+  #log { flex: 1; overflow-y: auto; padding: 16px 20px; }
+  .msg { max-width: 75%; padding: 10px 14px; border-radius: 14px;
+         margin: 6px 0; white-space: pre-wrap; line-height: 1.45; font-size: 14px; }
+  .agent { background: #1c2440; border-bottom-left-radius: 4px; }
+  .you { background: #0d3b66; margin-left: auto; border-bottom-right-radius: 4px; }
+  .sys { max-width: 85%; margin: 10px auto; text-align: center; font-size: 12.5px;
+         color: #f0a832; background: #131a30; border: 1px dashed #2c3554;
+         border-radius: 8px; padding: 8px 12px; }
+  .paylink { color: #6db3ff; word-break: break-all; text-decoration: underline;
+             cursor: help; }
+  .typing { color: #8b93b0; font-style: italic; }
+  form { display: flex; gap: 8px; padding: 12px 20px; border-top: 1px solid #232a45; }
+  input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #2c3554;
+          background: #131a30; color: inherit; font-size: 14px; }
+  input[disabled] { opacity: .6; }
+  #panel { width: 340px; border-left: 1px solid #232a45; padding: 16px;
+           overflow-y: auto; }
+  #panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em;
+              color: #8b93b0; }
+  .state { font-size: 13px; padding: 6px 10px; border-radius: 6px;
+           background: #1c2440; display: inline-block; margin-bottom: 10px; }
+  .event { font-size: 12.5px; padding: 8px 10px; border-left: 3px solid #2f6df6;
+           background: #131a30; margin: 6px 0; border-radius: 4px; }
+  .event.failed { border-color: #e5534b; }
+  .event.refunded { border-color: #f0a832; }
+  .event.captured, .event.invoice_sent { border-color: #3fb950; }
+  .booking { font-size: 12.5px; background: #131a30; padding: 8px 10px;
+             border-radius: 6px; margin: 6px 0; }
+  .booking b { color: #6db3ff; }
+  .muted { color: #8b93b0; font-style: italic; font-size: 12.5px; }
+
+  @media (max-width: 860px) {
+    #app { flex-direction: column; height: auto; }
+    #log { min-height: 50vh; }
+    #panel { width: auto; border-left: 0; border-top: 1px solid #232a45; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { scroll-behavior: auto !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div id="sitebar">
+    <div class="brand">paypal-frontdesk <span>— the AI front desk that collects the money</span></div>
+    <nav aria-label="Project links">
+      <a href="https://github.com/ntoledo319/paypal-frontdesk">GitHub repo</a>
+      <a href="https://youtu.be/k0219yFH6Rw">Demo video</a>
+      <a href="https://devpost.com/software/paypal-frontdesk">Devpost project</a>
+    </nav>
+  </div>
+
+  <p class="note">
+    <strong>Static replay of the live simulator</strong> — full agent + mock
+    PayPal server in the repo (<code>python3 -m paypal_frontdesk.web --mock</code>).
+    The PayPal approval link below is served by the mock server in the repo;
+    here it is simulated and not clickable.
+  </p>
+
+  <div id="app">
+    <div id="chat">
+      <header>
+        <div>
+          <h1>paypal-frontdesk — AI front desk that collects the money</h1>
+          <small id="mode">static replay · extraction: rules-based extraction (no OPENAI_API_KEY configured) · PayPal: mock server</small>
+        </div>
+        <button id="replay" type="button">&#9654; Replay demo</button>
+      </header>
+      <div id="log" aria-live="polite" aria-label="Demo conversation"></div>
+      <form aria-hidden="true">
+        <input disabled placeholder="Static replay — press “Replay demo” to watch the scripted conversation" aria-label="Input disabled in static replay">
+      </form>
+    </div>
+    <div id="panel">
+      <h2>Conversation state</h2>
+      <div class="state" id="state">—</div>
+      <h2>Payment trail</h2>
+      <div id="trail"><span class="muted">none yet</span></div>
+      <h2>Bookings <small style="font-weight:400;color:#8b949e">(AG Grid)</small></h2>
+      <div id="bookings" class="ag-theme-alpine-dark" style="height:220px"></div>
+    </div>
+  </div>
+
+<script src="ag-grid-community.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // Verbatim lines from `python3 -m paypal_frontdesk.cli --demo` against the
+  // bundled mock PayPal server (see DEMO-SCRIPT.md). Ids are deterministic
+  // in mock mode: ORDER-000001, CAPTURE-000002, INV-000003, REFUND-000004.
+  var BOOKING = {
+    id: "BK-0001", status: "PENDING_DEPOSIT",
+    service: "Full Interior Detail", date: "2026-10-16", time: "14:00",
+    deposit: "30.00", currency: "USD",
+    order_id: "", capture_id: "", refund_id: "", invoice_id: ""
+  };
+
+  var SCRIPT = [
+    { role: "agent", state: "COLLECTING",
+      text: "Hi, thanks for reaching out to Toledo Shine Mobile Detailing — this is Riley. I can book your appointment and take the deposit right here in the chat. What can I do for you?" },
+    { role: "you",
+      text: "Hi, I'm Dana Lee. I'd like a full interior detail next Friday at 2 pm. My number is 555-214-8690 and my email is dana.lee@example.com." },
+    { role: "agent", state: "CONFIRMING",
+      text: "Let me confirm what I have. Name: Dana Lee; Service: Full Interior Detail; Date: 2026-10-16; Time: 14:00; Phone: (555) 214-8690; Email: dana.lee@example.com. Did I get everything right?" },
+    { role: "you", text: "yes" },
+    { role: "agent", state: "QUOTED",
+      text: "Here's your quote: Full Interior Detail — 120.00 USD (deposit 30.00 USD due now, balance 90.00 USD after the visit). The deposit is paid securely through PayPal and fully refundable on cancellation. Shall I create your PayPal checkout link?" },
+    { role: "you", text: "yes" },
+    { role: "agent",
+      text: "Great — setting up your secure PayPal checkout now." },
+    { role: "agent", state: "AWAITING_DEPOSIT", payLink: true,
+      text: "Your booking BK-0001 is reserved. To lock it in, pay the 30.00 USD deposit here:\n  http://127.0.0.1:43147/checkout/approve?token=ORDER-000001\n(PayPal order ORDER-000001). Once you've approved it, just say 'paid' and I'll capture the deposit and confirm you.",
+      trail: { kind: "order_created", detail: "order ORDER-000001 for 30.00 USD" },
+      booking: { status: "PENDING_DEPOSIT", order_id: "ORDER-000001" } },
+    { role: "sys",
+      text: "Customer opens the PayPal approval link (simulated) → order ORDER-000001 APPROVED" },
+    { role: "you", text: "I just paid" },
+    { role: "agent", text: "Let me check that payment with PayPal…" },
+    { role: "agent", state: "BOOKED",
+      text: "Payment captured — 30.00 USD deposit received (capture id CAPTURE-000002). You're booked, Dana Lee: Full Interior Detail on 2026-10-16 at 14:00. I can also cancel with a full refund, or send the balance invoice after your visit.",
+      trail: { kind: "captured", detail: "capture CAPTURE-000002 — 30.00 USD collected for BK-0001" },
+      booking: { status: "BOOKED", capture_id: "CAPTURE-000002" } },
+    { role: "you", text: "Can you email me the invoice for the balance?" },
+    { role: "agent", text: "Of course — I'll send the balance invoice right now." },
+    { role: "agent",
+      text: "Invoice INV-000003 for 90.00 USD has been sent to dana.lee@example.com. It's payable online through PayPal.",
+      trail: { kind: "invoice_sent", detail: "invoice INV-000003 — 90.00 USD billed for BK-0001" },
+      booking: { invoice_id: "INV-000003" } },
+    { role: "you", text: "Actually, I need to cancel my appointment" },
+    { role: "agent", state: "CANCEL_CONFIRM",
+      text: "I can cancel that for you. Your deposit will be refunded in full to the original payment method. Are you sure you want to cancel?" },
+    { role: "you", text: "yes" },
+    { role: "agent", text: "Cancelling your booking and refunding your deposit now…" },
+    { role: "agent", state: "CLOSED",
+      text: "Done — your booking is cancelled and the 30.00 USD deposit has been refunded in full (refund id REFUND-000004). Sorry to see you go; we're here whenever you need us.",
+      trail: { kind: "refunded", detail: "refund REFUND-000004 — 30.00 USD returned for BK-0001" },
+      booking: { status: "REFUNDED", refund_id: "REFUND-000004" } }
+  ];
+
+  var log = document.getElementById("log");
+  var stateEl = document.getElementById("state");
+  var trailEl = document.getElementById("trail");
+  var replayBtn = document.getElementById("replay");
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var trail = [];
+  var booking = null;
+  var timers = [];
+
+  var gridApi = window.agGrid ? agGrid.createGrid(document.getElementById("bookings"), {
+    columnDefs: [
+      { field: "id", headerName: "Booking", width: 105 },
+      { field: "status", headerName: "Status", width: 140 },
+      { field: "service", headerName: "Service", flex: 1 },
+      { field: "date", headerName: "Date", width: 110 },
+      { field: "time", headerName: "Time", width: 80 },
+      { field: "deposit", headerName: "Deposit", width: 95, type: "rightAligned" },
+      { field: "order_id", headerName: "Order", width: 140 },
+      { field: "capture_id", headerName: "Capture", width: 140 },
+      { field: "refund_id", headerName: "Refund", width: 140 },
+      { field: "invoice_id", headerName: "Invoice", width: 120 }
+    ],
+    defaultColDef: { sortable: true, filter: true, resizable: true },
+    rowData: []
+  }) : null;
+
+  function esc(t) {
+    return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function scrollLog() {
+    log.scrollTo({ top: log.scrollHeight, behavior: reduced ? "auto" : "smooth" });
+  }
+
+  function addMsg(step) {
+    var d = document.createElement("div");
+    if (step.role === "sys") {
+      d.className = "sys";
+      d.textContent = step.text;
+    } else {
+      d.className = "msg " + step.role;
+      var html = esc(step.text);
+      if (step.payLink) {
+        html = html.replace(
+          /(http:\/\/127\.0\.0\.1:\d+\/checkout\/approve\?token=ORDER-000001)/,
+          '<span class="paylink" tabindex="0" role="link" aria-disabled="true" ' +
+          'title="Simulated — in the live demo this URL is served by the mock PayPal server in the repo">$1</span>'
+        );
+      }
+      d.innerHTML = html;
+    }
+    log.appendChild(d);
+    scrollLog();
+  }
+
+  function renderTrail() {
+    trailEl.innerHTML = trail.map(function (e) {
+      return '<div class="event ' + e.kind + '"><b>' + e.kind + "</b> — " + esc(e.detail) + "</div>";
+    }).join("") || '<span class="muted">none yet</span>';
+  }
+
+  function renderBooking() {
+    var rows = booking ? [booking] : [];
+    if (gridApi) {
+      gridApi.setGridOption("rowData", rows);
+    } else {
+      var el = document.getElementById("bookings");
+      el.innerHTML = rows.map(function (b) {
+        return '<div class="booking"><b>' + b.id + "</b> [" + b.status + "] " + b.service + "<br>" +
+          b.date + " " + b.time + " — deposit " + b.deposit + " " + b.currency + "<br>" +
+          (b.order_id ? "order " + b.order_id + "<br>" : "") +
+          (b.capture_id ? "capture " + b.capture_id + "<br>" : "") +
+          (b.refund_id ? "refund " + b.refund_id + "<br>" : "") +
+          (b.invoice_id ? "invoice " + b.invoice_id : "") +
+          "</div>";
+      }).join("") || '<span class="muted">none yet</span>';
+    }
+  }
+
+  function applyStep(step) {
+    addMsg(step);
+    if (step.state) stateEl.textContent = step.state;
+    if (step.trail) { trail.push(step.trail); renderTrail(); }
+    if (step.booking) {
+      booking = booking || Object.assign({}, BOOKING);
+      Object.assign(booking, step.booking);
+      renderBooking();
+    }
+  }
+
+  function reset() {
+    timers.forEach(clearTimeout);
+    timers = [];
+    log.innerHTML = "";
+    trail = [];
+    booking = null;
+    stateEl.textContent = "—";
+    renderTrail();
+    renderBooking();
+  }
+
+  function play() {
+    reset();
+    replayBtn.disabled = true;
+    if (reduced) {
+      // No staggered animation: render the full transcript immediately.
+      SCRIPT.forEach(applyStep);
+      replayBtn.disabled = false;
+      return;
+    }
+    var t = 400;
+    SCRIPT.forEach(function (step) {
+      timers.push(setTimeout(function () { applyStep(step); }, t));
+      t += step.role === "you" ? 800 : (step.role === "sys" ? 1000 : 1500);
+    });
+    timers.push(setTimeout(function () { replayBtn.disabled = false; }, t));
+  }
+
+  replayBtn.addEventListener("click", play);
+
+  // Auto-play once on load so judges see the full flow without clicking.
+  if (reduced) {
+    play();
+  } else {
+    timers.push(setTimeout(play, 800));
+  }
+})();
+</script>
+</body>
+</html>
