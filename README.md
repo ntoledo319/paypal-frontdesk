@@ -119,6 +119,10 @@ into a sandbox **buyer** account, approve, return to the chat, say "paid".
 Credentials are read from the environment at runtime only; they are never
 stored, logged, or printed.
 
+`scripts/sandbox_cycle.py` runs the full API cycle (order → approval →
+capture → refund → invoice) non-interactively and prints a JSON result block
+for the verification record.
+
 ## LLM extraction (optional)
 
 The agent needs to pull intent + slots (name, service, date, time,
