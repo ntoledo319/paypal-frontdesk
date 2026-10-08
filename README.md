@@ -14,11 +14,11 @@ Agentic Commerce*.
 
 - **Python 3.11+ standard library only.** No pip dependencies, nothing to
   install. (`pytest` is used as the test runner.)
-- **Fully offline by default.** A bundled mock PayPal server implements the
+- **Tested against the bundled mock PayPal server**, which implements the
   exact REST surface the agent uses, so the whole demo and the whole test
-  suite run with zero network access and zero credentials.
-- **The same client code runs against the real PayPal sandbox** — only
-  environment variables change.
+  suite run with zero network access and zero credentials. The sandbox
+  runner is included (`scripts/sandbox_cycle.py`); the code has **not yet
+  been verified live on the PayPal sandbox**.
 - **Honest AI:** with an `OPENAI_API_KEY` set, slot/intent extraction uses
   an OpenAI-compatible chat-completions endpoint; without one it uses
   deterministic rules-based extraction and says so. Nothing is faked.
@@ -98,6 +98,10 @@ by the mock server — click it (or type `approve`) to simulate the customer
 approving the payment, exactly as they would on paypal.com.
 
 ## Sandbox mode (real PayPal)
+
+Status: **tested against the bundled mock; the sandbox runner is included
+(`scripts/sandbox_cycle.py`); not yet verified live on the PayPal sandbox.**
+The steps below are the intended live run:
 
 1. Create a sandbox app at <https://developer.paypal.com> → *Apps &
    Credentials* → copy the **client id** and **secret**.
