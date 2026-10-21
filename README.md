@@ -23,6 +23,13 @@ Agentic Commerce*.
   an OpenAI-compatible chat-completions endpoint; without one it uses
   deterministic rules-based extraction and says so. Nothing is faked.
 
+## Judge replay
+
+<https://ntoledo319.github.io/paypal-frontdesk/> is a hosted static replay of
+the browser simulator, including the full quote → PayPal order → capture →
+invoice → refund money trail. Run the interactive offline version with
+`python3 -m paypal_frontdesk.web --mock`.
+
 ## Architecture
 
 ```
