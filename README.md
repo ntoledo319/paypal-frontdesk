@@ -16,9 +16,10 @@ Agentic Commerce*.
   install. (`pytest` is used as the test runner.)
 - **Tested against the bundled mock PayPal server**, which implements the
   exact REST surface the agent uses, so the whole demo and the whole test
-  suite run with zero network access and zero credentials. The sandbox
-  runner is included (`scripts/sandbox_cycle.py`); the code has **not yet
-  been verified live on the PayPal sandbox**.
+  suite run with zero network access and zero credentials. On November 2,
+  the REST client also completed a real **PayPal sandbox** order → approval →
+  capture → refund and invoice create → send cycle using simulated funds.
+  See [verification evidence and limits](SANDBOX-VERIFICATION.md).
 - **Honest AI:** with an `OPENAI_API_KEY` set, slot/intent extraction uses
   an OpenAI-compatible chat-completions endpoint; without one it uses
   deterministic rules-based extraction and says so. Nothing is faked.
@@ -106,9 +107,11 @@ approving the payment, exactly as they would on paypal.com.
 
 ## Sandbox mode (real PayPal)
 
-Status: **tested against the bundled mock; the sandbox runner is included
-(`scripts/sandbox_cycle.py`); not yet verified live on the PayPal sandbox.**
-The steps below are the intended live run:
+Status: **PayPal sandbox lifecycle verified November 2, 2026**, using a
+USD 1.00 test order, completed capture/refund, and a separate sandbox invoice
+verified SENT. See [SANDBOX-VERIFICATION.md](SANDBOX-VERIFICATION.md) for scope,
+observed integration fixes, and the separate live LLM intake check. The existing
+video remains an offline mock recording. To reproduce with your own test app:
 
 1. Create a sandbox app at <https://developer.paypal.com> → *Apps &
    Credentials* → copy the **client id** and **secret**.
@@ -153,6 +156,22 @@ export OPENAI_BASE_URL="https://api.openai.com"   # or any compatible endpoint
 export OPENAI_API_KEY="sk-..."
 export OPENAI_MODEL="gpt-4o-mini"
 ```
+
+For OpenRouter's free models, enable a server-enforced zero-price route cap:
+
+```bash
+export OPENAI_BASE_URL="https://openrouter.ai/api/v1"
+export OPENAI_MODEL="nvidia/nemotron-3.5-super-vl:free"
+export OPENROUTER_FREE_ONLY=1
+# Set OPENAI_API_KEY privately to your existing OpenRouter key.
+```
+
+This mode requires an explicit `:free` model on OpenRouter and sends zero
+maximum prompt, completion, and per-request prices. Check the current model
+catalog before use; availability can change. No paid model fallback is supplied.
+A live intake check with this configuration completed at reported cost $0 and
+filled a customer-name field the rules parser missed. Payment lifecycle and LLM
+intake were verified separately; the existing video does not show this live run.
 
 ## Testing (for judges)
 

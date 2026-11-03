@@ -172,3 +172,39 @@ def test_unknown_order_404(mock_paypal, client):
     with pytest.raises(PayPalError) as err:
         client.get_order("ORDER-999999")
     assert err.value.status == 404
+
+
+@pytest.mark.parametrize("action", ["capture", "full_refund"])
+def test_bodyless_post_sends_json_required_by_sandbox(monkeypatch, action):
+    import io
+
+    client = PayPalClient("https://api-m.sandbox.paypal.com", "test", "test")
+    client._token = "test-token"
+
+    def transport(request, timeout):
+        assert request.get_method() == "POST"
+        assert request.get_header("Content-type") == "application/json"
+        assert json.loads(request.data) == {}
+        return io.BytesIO(b'{"id":"TEST-ID","status":"COMPLETED"}')
+
+    monkeypatch.setattr(urllib.request, "urlopen", transport)
+    result = client.capture_order("ORDER") if action == "capture" else client.refund_capture("CAPTURE")
+    assert result["status"] == "COMPLETED"
+
+
+def test_invoice_create_normalizes_live_sandbox_link_response(monkeypatch):
+    client = PayPalClient("https://api-m.sandbox.paypal.com", "test", "test")
+    monkeypatch.setattr(client, "_request", lambda *args: {
+        "rel": "self", "method": "GET",
+        "href": "https://api-m.sandbox.paypal.com/v2/invoicing/invoices/INV2-TEST",
+    })
+    assert client.create_invoice("1.00", "USD", "Test")["id"] == "INV2-TEST"
+
+
+@pytest.mark.parametrize("response", [{}, {"href": "/unexpected/INV2-TEST"},
+                                      {"href": "/v2/invoicing/invoices/"}])
+def test_invoice_create_rejects_missing_resource_id(monkeypatch, response):
+    client = PayPalClient("https://api-m.sandbox.paypal.com", "test", "test")
+    monkeypatch.setattr(client, "_request", lambda *args: response)
+    with pytest.raises(PayPalError, match="no invoice ID"):
+        client.create_invoice("1.00", "USD", "Test")

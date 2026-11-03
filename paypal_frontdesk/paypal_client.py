@@ -22,6 +22,7 @@ import base64
 import json
 import os
 import urllib.error
+import urllib.parse
 import urllib.request
 
 DEFAULT_BASE_URL = "https://api-m.sandbox.paypal.com"
@@ -137,7 +138,17 @@ class PayPalClient:
             invoice["primary_recipients"] = [
                 {"billing_info": {"email_address": recipient_email}}
             ]
-        return self._request("POST", "/v2/invoicing/invoices", invoice)
+        created = self._request("POST", "/v2/invoicing/invoices", invoice)
+        # PayPal's minimal create response is a HATEOAS link, unlike the
+        # bundled mock's full resource. Normalize the identifier for callers.
+        if not created.get("id"):
+            path = urllib.parse.urlsplit(created.get("href", "")).path
+            prefix = "/v2/invoicing/invoices/"
+            invoice_id = path.removeprefix(prefix)
+            if not path.startswith(prefix) or not invoice_id or "/" in invoice_id:
+                raise PayPalError("PayPal invoice creation response had no invoice ID")
+            created = {**created, "id": invoice_id}
+        return created
 
     def send_invoice(self, invoice_id: str) -> dict:
         return self._request(
@@ -191,8 +202,10 @@ class PayPalClient:
             "Accept": "application/json",
         }
         data = None
-        if body is not None:
-            data = json.dumps(body).encode("utf-8")
+        if body is not None or method == "POST":
+            # PayPal requires JSON media type even for capture/full-refund
+            # calls without fields; a bodyless urllib POST otherwise gets 415.
+            data = json.dumps(body if body is not None else {}).encode("utf-8")
             headers["Content-Type"] = "application/json"
         request = urllib.request.Request(
             f"{self.base_url}{path}", data=data, headers=headers, method=method

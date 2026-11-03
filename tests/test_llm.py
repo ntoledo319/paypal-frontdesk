@@ -172,3 +172,33 @@ def test_hybrid_rules_win_ties_llm_fills_gaps(business):
     found = hybrid("I'm Dana Lee")
     assert found["name"] == "Dana Lee"          # rules win the tie
     assert found["email"] == "stub@example.com"  # LLM fills the gap
+
+
+def test_openrouter_free_only_caps_prices_and_preserves_versioned_url(business, monkeypatch):
+    import io
+    import json
+    import urllib.request
+
+    def transport(request, timeout):
+        body = json.loads(request.data)
+        assert request.full_url == "https://openrouter.ai/api/v1/chat/completions"
+        assert body["model"] == "example/model:free"
+        assert body["provider"]["max_price"] == {"prompt": 0, "completion": 0, "request": 0}
+        assert "models" not in body  # no paid model fallback
+        return io.BytesIO(json.dumps({"choices": [{"message": {
+            "content": json.dumps({"name": "Dana Lee"})
+        }}]}).encode())
+
+    monkeypatch.setattr(urllib.request, "urlopen", transport)
+    llm = LLMExtractor("https://openrouter.ai/api/v1", "test", "example/model:free",
+                       business.services, free_only=True)
+    assert llm("Reserve under Dana Lee") == {"name": "Dana Lee"}
+
+
+def test_free_only_rejects_paid_model_and_other_endpoints(business):
+    import pytest
+
+    for base, model in [("https://openrouter.ai/api", "example/paid"),
+                        ("https://example.com", "example/model:free")]:
+        with pytest.raises(ValueError, match="Free-only mode"):
+            LLMExtractor(base, "test", model, business.services, free_only=True)

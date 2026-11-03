@@ -348,8 +348,15 @@ class LLMExtractor:
         business_name: str = "the business",
         today: date | None = None,
         timeout: float = 20.0,
+        free_only: bool = False,
     ) -> None:
         self.base_url = base_url.rstrip("/")
+        self.free_only = free_only
+        if free_only and (
+            self.base_url not in ("https://openrouter.ai/api", "https://openrouter.ai/api/v1")
+            or not model.endswith(":free")
+        ):
+            raise ValueError("Free-only mode requires OpenRouter and an explicit :free model")
         self.api_key = api_key
         self.model = model
         self.services = services
@@ -364,18 +371,22 @@ class LLMExtractor:
             today=self.today.isoformat(),
             intents=", ".join(f'"{i}"' for i in INTENTS),
         )
-        body = json.dumps(
-            {
-                "model": self.model,
-                "messages": [
-                    {"role": "system", "content": prompt},
-                    {"role": "user", "content": text},
-                ],
-                "temperature": 0,
-            }
-        ).encode("utf-8")
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": text},
+            ],
+            "temperature": 0,
+        }
+        if self.free_only:
+            # Enforce zero-priced routes at the provider, not just by model name.
+            payload["provider"] = {"max_price": {"prompt": 0, "completion": 0, "request": 0}}
+            payload["max_tokens"] = 512
+        body = json.dumps(payload).encode("utf-8")
+        endpoint = self.base_url if self.base_url.endswith("/v1") else f"{self.base_url}/v1"
         request = urllib.request.Request(
-            f"{self.base_url}/v1/chat/completions",
+            f"{endpoint}/chat/completions",
             data=body,
             headers={
                 "Content-Type": "application/json",
@@ -452,6 +463,7 @@ def make_extractor(
         base_url=env.get("OPENAI_BASE_URL", "https://api.openai.com"),
         api_key=api_key,
         model=env.get("OPENAI_MODEL", "gpt-4o-mini"),
+        free_only=env.get("OPENROUTER_FREE_ONLY", "").lower() in ("1", "true", "yes"),
         services=services,
         business_name=business_name,
         today=today,
