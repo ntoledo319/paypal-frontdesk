@@ -4,8 +4,8 @@
 
 The repository's `PayPalClient` authenticated against
 `https://api-m.sandbox.paypal.com` and completed these operations with simulated
-sandbox funds. The owner approved the order using a PayPal personal sandbox
-buyer account. No production API or real payment was used.
+sandbox funds. The order was approved in a browser using the existing PayPal personal
+sandbox buyer account. No production API or real payment was used.
 
 | Operation | Evidence | Observed result |
 |---|---|---|
@@ -51,12 +51,44 @@ and contact details. This demonstrates a model contribution inside the actual
 intake workflow, rather than a provider connectivity test. No PayPal action was
 triggered by this intake-only conversation.
 
+## Combined application journey
+
+A subsequent continuous run used the actual `FrontDeskAgent`, `HybridExtractor`,
+and `PayPalClient` together. No method output was mocked or substituted. The
+existing business configuration quoted USD 120.00 for an interior detail with
+a USD 30.00 sandbox deposit and USD 90.00 balance.
+
+1. The customer asked to reserve under Dana Lee. The live free model supplied
+   the name that the rules parser missed; the application reached CONFIRMING.
+2. Two customer confirmations accepted the details and quote. The orchestrator
+   created one sandbox order and supplied its real sandbox approval URL.
+3. The order was approved in the browser using the existing sandbox buyer.
+   “I just paid” made the orchestrator check approval, capture the deposit, and
+   confirm the booking.
+4. The customer requested a balance invoice. The orchestrator created and sent
+   the USD 90.00 sandbox invoice and returned its identifier.
+5. The customer requested cancellation and confirmed it. The orchestrator
+   refunded the deposit and closed the conversation.
+
+| Combined-run resource | ID | Independent API readback |
+|---|---|---|
+| Order | `72018479V3047535B` | COMPLETED |
+| Capture | `4AU66916C4938312K` | COMPLETED; USD 30.00 |
+| Invoice | `INV2-W2DH-D4LQ-UPQS-H85K` | SENT; USD 90.00 |
+| Refund | `77V662198W745232Y` | COMPLETED; USD 30.00 |
+
+This combined run created exactly one additional sandbox order and one invoice.
+All LLM calls used the zero-price caps described above; total reported cost was
+$0. The final application state was CLOSED. The [sanitized transcript](docs/live-run-20261102.md) and
+[machine-readable event log](docs/live-run-20261102.json) retain actual customer
+turns, agent replies, payment events, and observed API statuses. Buyer email and
+approval URL are replaced with labeled redactions; credentials are never included.
+
 ## Scope and reproduction
 
-These are **two separately observed checks**: the live PayPal client lifecycle
-and live LLM-driven application intake. They are not evidence of a single recorded
-end-to-end AI + sandbox conversation. The existing public video and static replay
-show the offline mock lifecycle with rules-based extraction.
+The full combined conversation is now verified. The older public video and
+static replay still show the offline mock lifecycle with rules-based extraction;
+they should not be mistaken for footage of this new live sandbox run.
 
 Follow the README for local setup, sandbox environment variables, and the
 OpenRouter free-only option. `scripts/sandbox_cycle.py --buyer-email ...` creates
@@ -65,5 +97,6 @@ existing order. Its default test amount is USD 30.00. All amounts are simulated.
 
 The prototype stores bookings in memory. It does not check a calendar's actual
 availability, and cancelling after sending a balance invoice does not cancel
-that invoice. Production reconciliation and pending transaction handling need
-additional work; this verification is a sandbox prototype result.
+that invoice: the test invoice remains SENT and was not paid. Production
+reconciliation and pending transaction handling need additional work; this is a
+sandbox prototype result.

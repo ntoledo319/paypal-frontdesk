@@ -1,0 +1,460 @@
+{
+  "started_at": "2026-11-03T04:12:14.333729+00:00",
+  "completed_at": "2026-11-03T04:13:30.130005+00:00",
+  "mode": "live sandbox + live free-model extraction",
+  "model": "nvidia/nemotron-3.5-super-vl:free",
+  "catalog_pricing": {
+    "prompt": "0",
+    "completion": "0"
+  },
+  "turns": [
+    {
+      "customer": "Please put the reservation under Dana Lee for a full interior detail tomorrow at 2 pm. Contact [sandbox buyer email].",
+      "agent": "Let me confirm what I have. Name: Dana Lee; Service: Full Interior Detail; Date: 2026-11-03; Time: 14:00; Email: [sandbox buyer email]. Did I get everything right?",
+      "state": "CONFIRMING",
+      "at": "2026-11-03T04:12:17.267827+00:00"
+    },
+    {
+      "customer": "yes",
+      "agent": "Here's your quote: Full Interior Detail \u2014 120.00 USD (deposit 30.00 USD due now, balance 90.00 USD after the visit). The deposit is paid securely through PayPal and fully refundable on cancellation. Shall I create your PayPal checkout link?",
+      "state": "QUOTED",
+      "at": "2026-11-03T04:12:25.150001+00:00"
+    },
+    {
+      "customer": "yes",
+      "agent": "Great \u2014 setting up your secure PayPal checkout now.\nYour booking BK-0001 is reserved. To lock it in, pay the 30.00 USD deposit here:\n  [sandbox approval URL opened in browser]\n(PayPal order 72018479V3047535B). Once you've approved it, just say 'paid' and I'll capture the deposit and confirm you.",
+      "state": "AWAITING_DEPOSIT",
+      "at": "2026-11-03T04:12:27.502756+00:00"
+    },
+    {
+      "customer": "I just paid",
+      "agent": "Let me check that payment with PayPal\u2026\nPayment captured \u2014 30.00 USD deposit received (capture id 4AU66916C4938312K). You're booked, Dana Lee: Full Interior Detail on 2026-11-03 at 14:00. I can also cancel with a full refund, or send the balance invoice after your visit.",
+      "state": "BOOKED",
+      "at": "2026-11-03T04:13:22.484349+00:00"
+    },
+    {
+      "customer": "Can you email me the invoice for the balance?",
+      "agent": "Of course \u2014 I'll send the balance invoice right now.\nInvoice INV2-W2DH-D4LQ-UPQS-H85K for 90.00 USD has been sent to [sandbox buyer email]. It's payable online through PayPal.",
+      "state": "BOOKED",
+      "at": "2026-11-03T04:13:25.495270+00:00"
+    },
+    {
+      "customer": "I need to cancel my appointment",
+      "agent": "I can cancel that for you. Your deposit will be refunded in full to the original payment method. Are you sure you want to cancel?",
+      "state": "CANCEL_CONFIRM",
+      "at": "2026-11-03T04:13:27.211638+00:00"
+    },
+    {
+      "customer": "yes",
+      "agent": "Cancelling your booking and refunding your deposit now\u2026\nDone \u2014 your booking is cancelled and the 30.00 USD deposit has been refunded in full (refund id 77V662198W745232Y). Sorry to see you go; we're here whenever you need us.",
+      "state": "CLOSED",
+      "at": "2026-11-03T04:13:29.683562+00:00"
+    }
+  ],
+  "api_events": [
+    {
+      "at": "2026-11-03T04:12:17.266996+00:00",
+      "method": "POST",
+      "path": "/api/v1/chat/completions",
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "usage": {
+        "prompt_tokens": 293,
+        "completion_tokens": 405,
+        "total_tokens": 698,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 345,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "content": "{\"intent\":\"book\",\"name\":\"Dana Lee\",\"service\":\"Full Interior Detail\",\"date\":\"2026-11-03\",\"time\":\"14:00\",\"email\":\"[sandbox buyer email]\"}"
+    },
+    {
+      "at": "2026-11-03T04:12:25.148342+00:00",
+      "method": "POST",
+      "path": "/api/v1/chat/completions",
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "usage": {
+        "prompt_tokens": 257,
+        "completion_tokens": 107,
+        "total_tokens": 364,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 99,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "content": "{\"intent\": \"confirm\"}"
+    },
+    {
+      "at": "2026-11-03T04:12:26.656999+00:00",
+      "method": "POST",
+      "path": "/api/v1/chat/completions",
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "usage": {
+        "prompt_tokens": 257,
+        "completion_tokens": 206,
+        "total_tokens": 463,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 198,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "content": "{\"intent\": \"confirm\"}"
+    },
+    {
+      "at": "2026-11-03T04:12:26.977561+00:00",
+      "method": "POST",
+      "path": "/v1/oauth2/token",
+      "http_status": 200
+    },
+    {
+      "at": "2026-11-03T04:12:27.501947+00:00",
+      "method": "POST",
+      "path": "/v2/checkout/orders",
+      "http_status": 201,
+      "id": "72018479V3047535B",
+      "status": "CREATED"
+    },
+    {
+      "at": "2026-11-03T04:13:19.819009+00:00",
+      "method": "GET",
+      "path": "/v2/checkout/orders/72018479V3047535B",
+      "http_status": 200,
+      "id": "72018479V3047535B",
+      "status": "APPROVED",
+      "captures": []
+    },
+    {
+      "at": "2026-11-03T04:13:20.800531+00:00",
+      "method": "POST",
+      "path": "/api/v1/chat/completions",
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "usage": {
+        "prompt_tokens": 259,
+        "completion_tokens": 114,
+        "total_tokens": 373,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 106,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "content": "{\"intent\": \"paid\"}"
+    },
+    {
+      "at": "2026-11-03T04:13:21.206350+00:00",
+      "method": "GET",
+      "path": "/v2/checkout/orders/72018479V3047535B",
+      "http_status": 200,
+      "id": "72018479V3047535B",
+      "status": "APPROVED",
+      "captures": []
+    },
+    {
+      "at": "2026-11-03T04:13:22.483193+00:00",
+      "method": "POST",
+      "path": "/v2/checkout/orders/72018479V3047535B/capture",
+      "http_status": 201,
+      "id": "72018479V3047535B",
+      "status": "COMPLETED",
+      "captures": [
+        {
+          "id": "4AU66916C4938312K",
+          "status": "COMPLETED",
+          "amount": {
+            "currency_code": "USD",
+            "value": "30.00"
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-11-03T04:13:23.050465+00:00",
+      "method": "GET",
+      "path": "/v2/checkout/orders/72018479V3047535B",
+      "http_status": 200,
+      "id": "72018479V3047535B",
+      "status": "COMPLETED",
+      "captures": [
+        {
+          "id": "4AU66916C4938312K",
+          "status": "COMPLETED",
+          "amount": {
+            "currency_code": "USD",
+            "value": "30.00"
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-11-03T04:13:23.936483+00:00",
+      "method": "POST",
+      "path": "/api/v1/chat/completions",
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "usage": {
+        "prompt_tokens": 266,
+        "completion_tokens": 72,
+        "total_tokens": 338,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 64,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "content": "{\"intent\": \"invoice\"}"
+    },
+    {
+      "at": "2026-11-03T04:13:24.515928+00:00",
+      "method": "POST",
+      "path": "/v2/invoicing/invoices",
+      "http_status": 201,
+      "href": "https://api.sandbox.paypal.com/v2/invoicing/invoices/INV2-W2DH-D4LQ-UPQS-H85K"
+    },
+    {
+      "at": "2026-11-03T04:13:25.494065+00:00",
+      "method": "POST",
+      "path": "/v2/invoicing/invoices/INV2-W2DH-D4LQ-UPQS-H85K/send",
+      "http_status": 200,
+      "href": "https://www.sandbox.paypal.com/invoice/p/#INV2-W2DH-D4LQ-UPQS-H85K"
+    },
+    {
+      "at": "2026-11-03T04:13:25.851346+00:00",
+      "method": "GET",
+      "path": "/v2/invoicing/invoices/INV2-W2DH-D4LQ-UPQS-H85K",
+      "http_status": 200,
+      "id": "INV2-W2DH-D4LQ-UPQS-H85K",
+      "status": "SENT",
+      "amount": {
+        "breakdown": {
+          "item_total": {
+            "currency_code": "USD",
+            "value": "90.00"
+          },
+          "discount": {
+            "invoice_discount": {
+              "amount": {
+                "currency_code": "USD",
+                "value": "0.00"
+              }
+            },
+            "item_discount": {
+              "currency_code": "USD",
+              "value": "0.00"
+            }
+          },
+          "tax_total": {
+            "currency_code": "USD",
+            "value": "0.00"
+          }
+        },
+        "currency_code": "USD",
+        "value": "90.00"
+      }
+    },
+    {
+      "at": "2026-11-03T04:13:27.210133+00:00",
+      "method": "POST",
+      "path": "/api/v1/chat/completions",
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "usage": {
+        "prompt_tokens": 262,
+        "completion_tokens": 116,
+        "total_tokens": 378,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 108,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "content": "{\"intent\": \"cancel\"}"
+    },
+    {
+      "at": "2026-11-03T04:13:28.016704+00:00",
+      "method": "POST",
+      "path": "/api/v1/chat/completions",
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-super-vl:free",
+      "usage": {
+        "prompt_tokens": 257,
+        "completion_tokens": 73,
+        "total_tokens": 330,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 65,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "content": "{\"intent\": \"confirm\"}"
+    },
+    {
+      "at": "2026-11-03T04:13:29.682165+00:00",
+      "method": "POST",
+      "path": "/v2/payments/captures/4AU66916C4938312K/refund",
+      "http_status": 201,
+      "id": "77V662198W745232Y",
+      "status": "COMPLETED"
+    },
+    {
+      "at": "2026-11-03T04:13:30.128691+00:00",
+      "method": "GET",
+      "path": "/v2/payments/refunds/77V662198W745232Y",
+      "http_status": 200,
+      "id": "77V662198W745232Y",
+      "status": "COMPLETED",
+      "amount": {
+        "currency_code": "USD",
+        "value": "30.00"
+      }
+    }
+  ],
+  "order_create_attempts": 1,
+  "rules_alone": {
+    "intent": "book",
+    "email": "[sandbox buyer email]",
+    "service": "Full Interior Detail",
+    "date": "2026-11-03",
+    "time": "14:00"
+  },
+  "llm_contribution": "Dana Lee name absent from rules and supplied by live model",
+  "verified_invoice_status": "SENT",
+  "verified_refund_status": "COMPLETED",
+  "model_reported_total_cost": 0,
+  "payment_trail": [
+    {
+      "kind": "order_created",
+      "detail": "order 72018479V3047535B for 30.00 USD"
+    },
+    {
+      "kind": "captured",
+      "detail": "capture 4AU66916C4938312K \u2014 30.00 USD collected for BK-0001"
+    },
+    {
+      "kind": "invoice_sent",
+      "detail": "invoice INV2-W2DH-D4LQ-UPQS-H85K \u2014 90.00 USD billed for BK-0001"
+    },
+    {
+      "kind": "refunded",
+      "detail": "refund 77V662198W745232Y \u2014 30.00 USD returned for BK-0001"
+    }
+  ],
+  "state": "CLOSED",
+  "booking": {
+    "id": "BK-0001",
+    "customer_name": "Dana Lee",
+    "contact": "[sandbox buyer email]",
+    "service": "Full Interior Detail",
+    "date": "2026-11-03",
+    "time": "14:00",
+    "price": "120.00",
+    "deposit": "30.00",
+    "balance": "90.00",
+    "currency": "USD",
+    "status": "REFUNDED",
+    "order_id": "72018479V3047535B",
+    "capture_id": "4AU66916C4938312K",
+    "refund_id": "77V662198W745232Y",
+    "invoice_id": "INV2-W2DH-D4LQ-UPQS-H85K"
+  },
+  "disclosure": "Replay of recorded live application run \u2022 PayPal sandbox \u2022 simulated funds",
+  "redactions": "Sandbox buyer email and approval URL replaced with labeled placeholders; passwords and API keys are never recorded.",
+  "limitation": "Invoice remains SENT after cancellation; deposit refunded, outstanding invoice not automatically voided."
+}

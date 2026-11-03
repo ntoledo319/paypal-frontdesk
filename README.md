@@ -110,7 +110,7 @@ approving the payment, exactly as they would on paypal.com.
 Status: **PayPal sandbox lifecycle verified November 2, 2026**, using a
 USD 1.00 test order, completed capture/refund, and a separate sandbox invoice
 verified SENT. See [SANDBOX-VERIFICATION.md](SANDBOX-VERIFICATION.md) for scope,
-observed integration fixes, and the separate live LLM intake check. The existing
+observed integration fixes, and the combined live AI + sandbox conversation. The existing
 video remains an offline mock recording. To reproduce with your own test app:
 
 1. Create a sandbox app at <https://developer.paypal.com> → *Apps &
@@ -169,9 +169,10 @@ export OPENROUTER_FREE_ONLY=1
 This mode requires an explicit `:free` model on OpenRouter and sends zero
 maximum prompt, completion, and per-request prices. Check the current model
 catalog before use; availability can change. No paid model fallback is supplied.
-A live intake check with this configuration completed at reported cost $0 and
-filled a customer-name field the rules parser missed. Payment lifecycle and LLM
-intake were verified separately; the existing video does not show this live run.
+A live combined conversation with this configuration filled a customer-name
+field the rules parser missed, then created an order, captured the deposit, sent
+an invoice, and refunded the deposit through the actual orchestrator. Model calls
+reported total cost $0. The existing video does not show this new live run.
 
 ## Testing (for judges)
 
