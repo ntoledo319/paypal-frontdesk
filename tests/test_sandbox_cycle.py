@@ -26,7 +26,7 @@ def test_rejects_non_sandbox_before_client_creation(monkeypatch, base_url):
 
 
 @pytest.mark.parametrize("args", [[], ["--buyer-email", "not-email"],
-                                  ["--buyer-email", "sb-buyer@personal.example.com"]])
+                                  ["--buyer-email", "buyer@@personal.example.com"]])
 def test_requires_real_buyer_argument_before_client_creation(monkeypatch, args):
     monkeypatch.setattr(cycle.PayPalClient, "from_env", lambda: pytest.fail("client created"))
     with pytest.raises(SystemExit) as error:
@@ -34,7 +34,10 @@ def test_requires_real_buyer_argument_before_client_creation(monkeypatch, args):
     assert error.value.code == 2
 
 
-def test_offline_runner_journey_uses_selected_buyer(monkeypatch, client, mock_paypal, capsys):
+@pytest.mark.parametrize("buyer_email", [
+    "sb-test@personal.example.net", "sb-generated@personal.example.com",
+])
+def test_offline_runner_journey_uses_selected_buyer(monkeypatch, client, mock_paypal, capsys, buyer_email):
     monkeypatch.setenv("PAYPAL_BASE_URL", "https://api-m.sandbox.paypal.com")
     monkeypatch.setattr(cycle.PayPalClient, "from_env", lambda: client)
     from conftest import approve_order
@@ -53,7 +56,7 @@ def test_offline_runner_journey_uses_selected_buyer(monkeypatch, client, mock_pa
         return original(*args, **kwargs)
 
     monkeypatch.setattr(client, "create_invoice", invoice)
-    assert cycle.main(["--buyer-email", "sb-test@personal.example.net"]) == 0
-    assert recipients == ["sb-test@personal.example.net"]
+    assert cycle.main(["--buyer-email", buyer_email]) == 0
+    assert recipients == [buyer_email]
     output = capsys.readouterr().out
     assert "CAPTURE-" in output and "REFUND-" in output and "INV-" in output

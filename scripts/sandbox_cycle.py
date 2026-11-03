@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -43,7 +44,7 @@ def main(argv: list[str] | None = None) -> int:
         help="email of your PayPal sandbox personal (buyer) test account",
     )
     args = parser.parse_args(argv)
-    if "@" not in args.buyer_email or args.buyer_email.endswith("example.com"):
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", args.buyer_email):
         parser.error("provide the actual sandbox buyer account email")
     # This verification script must never move production money or send an
     # invoice from a production account, even if the shell has live settings.
