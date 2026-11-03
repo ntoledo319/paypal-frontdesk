@@ -38,3 +38,9 @@ def test_cli_demo_uses_bundled_business_json():
     assert DEFAULT_BUSINESS_JSON.exists()
     business = Business.from_json(DEFAULT_BUSINESS_JSON)
     assert business.services  # valid catalog
+
+
+def test_published_devpost_scripted_command(capsys):
+    assert main(["--mock", "--scripted"]) == 0
+    out = capsys.readouterr().out
+    assert "CAPTURE-" in out and "REFUND-" in out and "INV-" in out

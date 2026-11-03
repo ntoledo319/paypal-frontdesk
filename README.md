@@ -78,7 +78,7 @@ git clone https://github.com/ntoledo319/paypal-frontdesk.git
 cd paypal-frontdesk
 
 # scripted end-to-end demo: book + pay deposit, send invoice, cancel + refund
-python3 -m paypal_frontdesk.cli --demo
+python3 -m paypal_frontdesk.cli --demo  # --scripted is a compatibility alias
 
 # interactive chat in your terminal (type 'approve' to open the PayPal link)
 python3 -m paypal_frontdesk.cli --mock
@@ -130,9 +130,13 @@ into a sandbox **buyer** account, approve, return to the chat, say "paid".
 Credentials are read from the environment at runtime only; they are never
 stored, logged, or printed.
 
-`scripts/sandbox_cycle.py` runs the full API cycle (order → approval →
-capture → refund → invoice) non-interactively and prints a JSON result block
-for the verification record.
+Run `python3 scripts/sandbox_cycle.py --buyer-email YOUR_SANDBOX_BUYER_EMAIL`
+for the API verification cycle (order → approval → capture → refund → invoice).
+Use the email of the personal test account from your PayPal sandbox dashboard.
+The script pauses for you to approve the order in a browser, then prints a JSON
+result block for the verification record. It refuses non-sandbox API URLs.
+This verifies the PayPal client; separately run the chat with your configured
+LLM to demonstrate the integrated AI + sandbox booking journey.
 
 ## LLM extraction (optional)
 
@@ -154,7 +158,7 @@ export OPENAI_MODEL="gpt-4o-mini"
 
 ```bash
 cd paypal-frontdesk
-python3 -m pytest        # 73 tests, ~25s, fully offline
+python3 -m pytest        # fully offline regression suite
 ```
 
 The suite covers: dialogue-brain transitions, slot extraction (rules path

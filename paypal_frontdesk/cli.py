@@ -116,7 +116,7 @@ def main(argv: list[str] | None = None) -> int:
         help="run fully offline against the bundled mock PayPal server",
     )
     parser.add_argument(
-        "--demo",
+        "--demo", "--scripted",
         action="store_true",
         help="run the scripted booking journey (non-interactive); implies --mock",
     )

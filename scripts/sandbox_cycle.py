@@ -11,7 +11,7 @@ Prereqs (one-time, via developer.paypal.com with the owner's login):
 
 Usage:
   PAYPAL_CLIENT_ID=... PAYPAL_CLIENT_SECRET=... \
-      python3 scripts/sandbox_cycle.py
+      python3 scripts/sandbox_cycle.py --buyer-email YOUR_SANDBOX_BUYER_EMAIL
 
 The script pauses after creating the order and prints the approval link.
 Open it in a browser, log in as the sandbox buyer, approve, then press Enter.
@@ -21,7 +21,9 @@ goes verbatim into SANDBOX-VERIFICATION.md. No secrets are printed.
 
 from __future__ import annotations
 
+import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -34,7 +36,20 @@ from paypal_frontdesk.paypal_client import (
 )
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--buyer-email", required=True,
+        help="email of your PayPal sandbox personal (buyer) test account",
+    )
+    args = parser.parse_args(argv)
+    if "@" not in args.buyer_email or args.buyer_email.endswith("example.com"):
+        parser.error("provide the actual sandbox buyer account email")
+    # This verification script must never move production money or send an
+    # invoice from a production account, even if the shell has live settings.
+    base_url = os.environ.get("PAYPAL_BASE_URL", "https://api-m.sandbox.paypal.com")
+    if base_url.rstrip("/") != "https://api-m.sandbox.paypal.com":
+        parser.error("PAYPAL_BASE_URL must be https://api-m.sandbox.paypal.com")
     client = PayPalClient.from_env()  # base URL defaults to the real sandbox
     print(f"[sandbox] base_url = {client.base_url}")
     result: dict[str, object] = {"base_url": client.base_url}
@@ -45,6 +60,9 @@ def main() -> int:
     print(f"[sandbox] order created: {order_id} status={order.get('status')}")
 
     approve = find_link(order, "approve")
+    if not order_id or not approve:
+        print("[sandbox] order response has no ID or approval link; aborting")
+        return 1
     print(f"[sandbox] approve link: {approve}")
     input("[sandbox] approve as the sandbox buyer in a browser, then press Enter...")
 
@@ -60,6 +78,11 @@ def main() -> int:
     result["capture"] = {"order_status": capture.get("status"), "capture_id": capture_id}
     print(f"[sandbox] captured: {capture_id} order_status={capture.get('status')}")
 
+    if capture.get("status") != "COMPLETED" or not capture_id:
+        print("[sandbox] capture not completed; aborting before refund or invoice")
+        print(json.dumps(result, indent=2))
+        return 1
+
     refund = client.refund_capture(capture_id)
     result["refund"] = {"id": refund.get("id"), "status": refund.get("status")}
     print(f"[sandbox] refunded: {refund.get('id')} status={refund.get('status')}")
@@ -68,10 +91,14 @@ def main() -> int:
         "90.00",
         "USD",
         "sandbox verification balance",
-        recipient_email="sb-buyer@personal.example.com",  # sandbox buyer inbox
+        recipient_email=args.buyer_email,
         note="sandbox verification balance invoice",
     )
     invoice_id = invoice.get("id")
+    if not invoice_id:
+        print("[sandbox] invoice response has no ID; aborting")
+        print(json.dumps(result, indent=2))
+        return 1
     sent = client.send_invoice(invoice_id)
     result["invoice"] = {"id": invoice_id, "send_status": sent.get("status", "sent")}
     print(f"[sandbox] invoice sent: {invoice_id}")
